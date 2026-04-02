@@ -1,0 +1,1 @@
+"""Public ORM integration namespace."""
