@@ -2,6 +2,11 @@
 
 `qry` is a Python library for declarative filtering, ordering, and pagination.
 It is designed to keep the query definition layer separate from the HTTP layer and the ORM layer, so the same filter concepts can be reused in different parts of an application.
+## What's new in 0.2.0
+
+- Strict ordering control via `FilterConfig.reject_invalid_ordering_fields`. With a configured allowlist, invalid `order_by` entries raise `ValueError` instead of silently generating SQL.
+- Shared validation helpers plus the operator registry (`qry.core.operator_registry`) let you plug in new operators (e.g., `regex`) or override built-ins without editing the dispatcher.
+- Updated release checklist and documentation; operator registry and validator hooks are covered in README + changelog.
 
 The project is especially useful when you want to:
 - define reusable filter contracts for list endpoints
