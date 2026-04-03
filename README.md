@@ -214,6 +214,22 @@ Supported operators are defined in `OperatorEnum`:
 - `not`
 - `between`
 
+### Operator registry
+
+`qry` describes every operator as a handler that builds the SQLAlchemy boolean expression. You can override any handler or register new behavior through `register_operator_handler` (or `register_operator`, a decorator that wraps it).
+
+```python
+from qry.core.enums import OperatorEnum
+from qry.core.operator_registry import register_operator_handler
+
+
+@register_operator_handler(OperatorEnum.LIKE)
+def custom_like(column, value):
+    return column.like(f\"%{value}%\") & column != \"blocked\"
+```
+
+The adapter always consults the registry when translating filters, so your custom handler runs everywhere `build_expression` is used (`CoreFilter` → `SQLAlchemyQueryAdapter`). Use `list_registered_operators()` when you need to inspect which handlers are available.
+
 ### Filter keys
 
 `qry` uses the `field__operator` convention.
