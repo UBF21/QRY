@@ -6,7 +6,7 @@ from fastapi import Query
 
 from qry.compat.pydantic import BaseModel, ConfigDict, Field, PYDANTIC_V1, model_dump
 from qry.core.enums import OperatorEnum
-from qry.core.parsing import parse_filter_key, parse_order_by_string
+from qry.core.parsing import parse_filter_key
 from qry.core.schemas import (
     FilterSchema,
     HavingFilterSchema,
@@ -14,6 +14,7 @@ from qry.core.schemas import (
     RelationFilterSchema,
     ResolvedOrderBySchema,
 )
+from qry.core.validation import ensure_operator_registered, resolve_ordering_fields
 
 
 class CoreFilter(BaseModel):
@@ -67,6 +68,8 @@ class CoreFilter(BaseModel):
             column, operator = parse_filter_key(field_name)
             if operator == OperatorEnum.EQ and isinstance(value, list):
                 operator = OperatorEnum.IN
+
+            ensure_operator_registered(operator)
             result.append(FilterSchema(column=column, operator=operator, value=value))
 
         return result
@@ -125,10 +128,10 @@ class CoreFilter(BaseModel):
             "reject_invalid_ordering_fields",
             False,
         )
-        parsed_fields = parse_order_by_string(
+        parsed_fields = resolve_ordering_fields(
             self.order_by,
             allowed_fields=allowed_fields,
-            raise_on_invalid=reject_invalid_ordering and allowed_fields is not None,
+            reject_invalid=reject_invalid_ordering,
         )
         resolved: list[ResolvedOrderBySchema] = []
 

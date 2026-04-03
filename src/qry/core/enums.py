@@ -17,6 +17,7 @@ class OperatorEnum(str, Enum):
     ILIKE = "ilike"
     NOT = "not"
     BETWEEN = "between"
+    REGEX = "regex"
 
 
 class OperationEnum(str, Enum):
@@ -27,4 +28,3 @@ class OperationEnum(str, Enum):
 class OrderDirectionEnum(str, Enum):
     ASC = "asc"
     DESC = "desc"
-

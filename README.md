@@ -213,6 +213,7 @@ Supported operators are defined in `OperatorEnum`:
 - `ilike`
 - `not`
 - `between`
+- `regex`
 
 ### Operator registry
 

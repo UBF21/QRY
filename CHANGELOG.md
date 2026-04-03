@@ -6,6 +6,7 @@
 - `parse_order_by_string` and `SQLAlchemyQueryAdapter` now raise `ValueError` when requested ordering columns/directions are invalid, so bad requests fail fast instead of producing bad SQL.
 - Documented the new configuration in the README and highlighted the stricter adapter behavior.
 - Introduced `qry.core.operator_registry` so handlers can be registered or overridden without modifying the dispatcher, paving the way for more operators.
+- Added a built-in `regex` operator (`OperatorEnum.REGEX`) and example handler so users can match filters using database regex support via the registry.
 
 ## [0.1.0] - 2026-04-02
 ### Added

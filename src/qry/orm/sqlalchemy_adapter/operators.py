@@ -73,6 +73,11 @@ def _between(column: Any, value: Any) -> Any:
     return column.between(low, high)
 
 
+@register_operator(OperatorEnum.REGEX)
+def _regex(column: Any, value: Any) -> Any:
+    return column.op("REGEXP")(value)
+
+
 def build_expression(column: Any, operator: OperatorEnum, value: Any) -> Any:
     handler = get_operator_handler(operator)
     return handler(column, value)

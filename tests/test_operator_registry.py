@@ -21,6 +21,10 @@ def test_register_operator_handler_overrides_behavior() -> None:
         register_operator_handler(OperatorEnum.EQ, original_handler)
 
 
+def test_regex_operator_produces_expected_sql() -> None:
+    expr = build_expression(column('email'), OperatorEnum.REGEX, '^a')
+    assert 'REGEXP' in str(expr).upper()
+
 def test_list_registered_operators_contains_core_values() -> None:
     registered = list_registered_operators()
     assert OperatorEnum.EQ in registered
