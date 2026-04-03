@@ -1,3 +1,5 @@
+import pytest
+
 from sqlalchemy import ForeignKey, String, create_engine, func, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
@@ -84,3 +86,17 @@ def test_sqlalchemy_adapter_applies_having_filters() -> None:
     rows = session.execute(statement).all()
 
     assert rows == [(1, 2)]
+
+
+def test_sqlalchemy_adapter_rejects_unknown_order_column() -> None:
+    session = setup_database()
+    adapter = SQLAlchemyQueryAdapter()
+
+    with pytest.raises(ValueError) as excinfo:
+        adapter.build(
+            query=select(User),
+            model=User,
+            order_by=[ResolvedOrderBySchema(column='unknown', direction=OrderDirectionEnum.ASC)],
+        )
+
+    assert "Ordering column 'unknown' not found on model 'User'." in str(excinfo.value)

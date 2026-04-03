@@ -21,12 +21,21 @@ def parse_filter_key(field_name: str) -> tuple[str, OperatorEnum]:
         return field_name, OperatorEnum.EQ
 
     column, raw_operator = field_name.rsplit("__", 1)
-    return column, OperatorEnum(raw_operator)
+    try:
+        operator = OperatorEnum(raw_operator)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid operator '{raw_operator}' in filter '{field_name}'."
+        ) from exc
+
+    return column, operator
 
 
 def parse_order_by_string(
     value: str | None,
     allowed_fields: Collection[str] | None = None,
+    *,
+    raise_on_invalid: bool = False,
 ) -> list[OrderBySchema]:
     """Parse `-field,+other_field` strings into structured order definitions."""
     if not value:
@@ -50,9 +59,10 @@ def parse_order_by_string(
             continue
 
         if allowed_fields is not None and item not in allowed_fields:
+            if raise_on_invalid:
+                raise ValueError(f"Ordering field '{item}' is not allowed.")
             continue
 
         result.append(OrderBySchema(column=item, direction=direction))
 
     return result
-

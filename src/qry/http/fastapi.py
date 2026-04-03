@@ -35,7 +35,8 @@ class CoreFilter(BaseModel):
         relation_filters: dict[str, Any] = {}
         relation_order_by: dict[str, Any] = {}
         having_filters: dict[str, Any] = {}
-        allowed_ordering_fields: list[str] = []
+        allowed_ordering_fields: list[str] | None = None
+        reject_invalid_ordering_fields: bool = False
 
     if PYDANTIC_V1:
         class Config:
@@ -119,7 +120,16 @@ class CoreFilter(BaseModel):
     def ordering_fields(self) -> list[ResolvedOrderBySchema]:
         allowed_fields = getattr(self.FilterConfig, "allowed_ordering_fields", None)
         configured_relations = getattr(self.FilterConfig, "relation_order_by", {})
-        parsed_fields = parse_order_by_string(self.order_by, allowed_fields=allowed_fields)
+        reject_invalid_ordering = getattr(
+            self.FilterConfig,
+            "reject_invalid_ordering_fields",
+            False,
+        )
+        parsed_fields = parse_order_by_string(
+            self.order_by,
+            allowed_fields=allowed_fields,
+            raise_on_invalid=reject_invalid_ordering and allowed_fields is not None,
+        )
         resolved: list[ResolvedOrderBySchema] = []
 
         for item in parsed_fields:
@@ -160,4 +170,3 @@ class CoreFilter(BaseModel):
                 return last_step[1]
 
         return default_column
-

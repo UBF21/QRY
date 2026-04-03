@@ -301,9 +301,21 @@ Each filter class can define a nested `FilterConfig` to control behavior.
 
 Available options:
 - `allowed_ordering_fields`
+- `reject_invalid_ordering_fields` *(bool, defaults to `False`)* – if `True` (and there is an allowlist), `order_by` entries that fall outside the allowlist now raise `ValueError`.
 - `relation_filters`
 - `relation_order_by`
 - `having_filters`
+
+Example strict ordering configuration:
+
+```python
+class UserFilter(CoreFilter):
+    class FilterConfig:
+        allowed_ordering_fields = ["email", "created_at"]
+        reject_invalid_ordering_fields = True
+```
+
+With this setup, `order_by='-created_at,+foo'` raises immediately because `foo` is not allowed, while `order_by='-email'` continues to work as before.
 
 ## SQLAlchemy Integration
 
@@ -334,7 +346,7 @@ The adapter supports:
 - direct filters on the root model
 - relation filters
 - `having` expressions
-- ordering
+- ordering (invalid columns or unsupported directions now raise a `ValueError` so that callers notice mistakes instead of generating invalid SQL)
 - pagination
 - eager loading for relations
 - sub-relation loading

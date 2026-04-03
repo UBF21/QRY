@@ -120,21 +120,35 @@ class SQLAlchemyQueryAdapter(BaseQueryAdapter[Select | Update]):
         order_by: list[ResolvedOrderBySchema],
     ) -> Select:
         for item in order_by:
-            try:
-                if item.target is not None:
-                    query, joined_target = self._join_manager.ensure_join(
-                        query=query,
-                        root_model=model,
-                        target=item.target,
-                    )
-                    model_ref = self._resolve_model_reference(joined_target, fallback=item.target)
+            if item.target is not None:
+                query, joined_target = self._join_manager.ensure_join(
+                    query=query,
+                    root_model=model,
+                    target=item.target,
+                )
+                model_ref = self._resolve_model_reference(joined_target, fallback=item.target)
+                try:
                     order_column = getattr(model_ref, item.column)
-                else:
+                except AttributeError as exc:
+                    raise ValueError(
+                        f"Ordering column '{item.column}' not found on relation '{model_ref.__name__}'."
+                    ) from exc
+            else:
+                try:
                     order_column = getattr(model, item.column)
+                except AttributeError as exc:
+                    raise ValueError(
+                        f"Ordering column '{item.column}' not found on model '{model.__name__}'."
+                    ) from exc
 
-                query = query.order_by(getattr(order_column, item.direction.value)())
-            except AttributeError:
-                query = query.order_by(asc(item.column) if item.direction.value == "asc" else desc(item.column))
+            try:
+                order_expr = getattr(order_column, item.direction.value)
+            except AttributeError as exc:
+                raise ValueError(
+                    f"Ordering direction '{item.direction.value}' is not supported on column '{item.column}'."
+                ) from exc
+
+            query = query.order_by(order_expr())
 
         return query
 
@@ -190,4 +204,3 @@ class SQLAlchemyQueryAdapter(BaseQueryAdapter[Select | Update]):
             if isinstance(last_step, tuple) and last_step:
                 return last_step[0]
         return joined_target
-
